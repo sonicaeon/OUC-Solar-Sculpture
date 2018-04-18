@@ -34,17 +34,37 @@ LiquidCrystal lcd(rs, en, d0, d1, d2, d3, d4, d5, d6, d7);
 LiquidCrystal lcd2(rs, en2, d0, d1, d2, d3, d4, d5, d6, d7);
 
 // initalize IRsensor object library
-//DistanceGP2Y0A21YK IRSensor;
-//DistanceGP2Y0A21YK IRSensor2;
+DistanceGP2Y0A21YK IRSensor;
+DistanceGP2Y0A21YK IRSensor2;
 //DistanceGP2Y0A21YK IRSensor3;
 //DistanceGP2Y0A21YK IRSensor4;
-DistanceGP2Y0A21YK IRSensor5;
-//DistanceGP2Y0A21YK IRSensor6;
-//DistanceGP2Y0A21YK IRSensor7;
+//DistanceGP2Y0A21YK IRSensor5;
+DistanceGP2Y0A21YK IRSensor6;
+DistanceGP2Y0A21YK IRSensor7;
 //DistanceGP2Y0A21YK IRSensor8;
+DistanceGP2Y0A21YK IRSensor9;
+DistanceGP2Y0A21YK IRSensor10;
+//DistanceGP2Y0A21YK IRSensor11;
+//DistanceGP2Y0A21YK IRSensor12;
 int distance = 0, distance2 = 0, distance3 = 0, distance4 = 0,
-    distance5 = 0, distance6 = 0, distance7 = 0, distance8 = 0;
+    distance5 = 0, distance6 = 0, distance7 = 0, distance8 = 0,
+    distance9 = 0, distance10 = 0, distance11 = 0, distance12 = 0;
 int brightness = 64;
+const int avgSamples = 30; // number of samples to take before averaging
+int mVperAmp = 136; // 90 mV per amp of input current (when Vcc = 3.3v) or 136 mV (Vcc = 5v)
+float mVperUnit = 4.89; // ratio to convert ADC value into voltage
+int sensorValue = 0; // ADC value reading
+int voltageValue = 0; // ADC value reading
+float power = 0; // wattage produced of current * voltage
+int ACSoffset = 2500; // the current sensor outputs an analog value of Vcc / 2 (voltage at 0 Amps = 2.5v)
+int voltageDivOffset = 5; // voltage div ratio to convert back up
+float voltReading = 0;
+float sensorVoltage = 0;
+float ampReading = 0;
+float electricalRate = 9.66; // commercial rate per kWh in Florida @ 2017
+float money = 0;
+int counter = 0;
+float voltage = 19.0; // temp fix, voltage divider reading + current sensor do not currently work together
 
 // Define hardware connections
 #define PIN_GATE_IN 18 // sound sensor digital pin
@@ -62,6 +82,8 @@ int brightness = 64;
 #define IRS_PIN10 A2
 #define IRS_PIN11 A1
 #define IRS_PIN12 A0
+#define solarVOUT A13 // solar panel voltage
+#define currentVOUT A14 // current sensor Vout = analog pin 14
 #define BACKLIGHT 4 // lcd display
 #define LED1 14 // Digital pin for LED strip 1
 #define LED2 15 // Digital pin for LED strip 2
@@ -104,14 +126,18 @@ void setup()
   //attachInterrupt(IRQ_GATE_IN, soundISR, CHANGE);
 
   // initalize IRsensor(s)
-  //IRSensor.begin(IRS_PIN);
-  //IRSensor2.begin(IRS_PIN2);
+  IRSensor.begin(IRS_PIN);
+  IRSensor2.begin(IRS_PIN2);
   //IRSensor3.begin(IRS_PIN3);
   //IRSensor4.begin(IRS_PIN4);
-  IRSensor5.begin(IRS_PIN5);
-  //IRSensor6.begin(IRS_PIN6);
-  //IRSensor7.begin(IRS_PIN7);
+  //IRSensor5.begin(IRS_PIN5);
+  IRSensor6.begin(IRS_PIN6);
+  IRSensor7.begin(IRS_PIN7);
   //IRSensor8.begin(IRS_PIN8);
+  IRSensor9.begin(IRS_PIN9);
+  IRSensor10.begin(IRS_PIN10);
+  //IRSensor11.begin(IRS_PIN11);
+  //IRSensor12.begin(IRS_PIN12);
 
   // Display status
   Serial.println("Initialized");
@@ -140,14 +166,66 @@ void loop()
   strip2.show();
 
   // query the distance (cm) from the sensor(s)
-  //distance = IRSensor.getDistanceCentimeter();
-  //distance2 = IRSensor2.getDistanceCentimeter();
+  distance = IRSensor.getDistanceCentimeter();
+  distance2 = IRSensor2.getDistanceCentimeter();
   //distance3 = IRSensor3.getDistanceCentimeter();
   //distance4 = IRSensor4.getDistanceCentimeter();
-  distance5 = IRSensor5.getDistanceCentimeter();
-  //distance6 = IRSensor6.getDistanceCentimeter();
-  //distance7 = IRSensor7.getDistanceCentimeter();
+  //distance5 = IRSensor5.getDistanceCentimeter();
+  distance6 = IRSensor6.getDistanceCentimeter();
+  distance7 = IRSensor7.getDistanceCentimeter();
   //distance8 = IRSensor8.getDistanceCentimeter();
+  distance9 = IRSensor9.getDistanceCentimeter();
+  distance10 = IRSensor10.getDistanceCentimeter();
+  //distance11 = IRSensor11.getDistanceCentimeter();
+  //distance12 = IRSensor12.getDistanceCentimeter();
+
+  for(int i = 0;i < avgSamples;i++)
+  {
+    analogRead(currentVOUT); // discard the first reading to increase accuracy and allow time for ADC to set ADCL & ADCH registers
+    sensorValue += analogRead(currentVOUT);
+    delay(2); // wait 2ms for ADC multiplexer to switch & stabilize voltage
+    //analogRead(solarVOUT); // discard the first reading to increase accuracy
+    //voltageValue += analogRead(solarVOUT);
+    //delay(2);
+  }
+  // average the voltage and current values
+  sensorValue = sensorValue / avgSamples; // a sensor value of ~512 is about 0A. Upward to +15.5A, below to -15.5A
+  //voltageValue = voltageValue / avgSamples;
+
+  // convert into actual voltage
+  //voltReading = (voltageValue / 1024.0) * mVperUnit * voltageDivOffset;
+  
+  // convert into actual amps
+  sensorVoltage = (sensorValue / 1024.0) * 5000.0; // voltage read in mV
+  ampReading = ((sensorVoltage - ACSoffset) / mVperAmp);
+  //sensorVoltage = sensorValue * 0.0049;
+  //ampReading = ((sensorVoltage - 2.5) / .136);
+
+  // compensate for inaccuracy from the current sensor ~1A with current sensor not connected
+  // ~2A off inaccuracy when connected to our solar panel
+  if(ampReading > 11.0)
+  {
+    ampReading = ampReading - 2.0;
+  }
+  else if(ampReading < 1.0)
+  {
+    ampReading = 0;
+  }
+
+  // power is in kWh which is then converted by the electrical rate
+  power = voltage * ampReading;
+  //power = voltReading * ampReading;
+  
+  if(counter == 0)
+  {
+    money = (electricalRate * power) / 1000;
+  }
+  else if(counter >= 500)
+  {
+    money += (electricalRate * power) / 1000;
+    counter = 1;
+  }
+  counter++;
 
   // hide the message until sensor triggers
   displayMessage();
@@ -168,14 +246,18 @@ void loop()
   }
 
   // Query the distance value if any of the sensors has triggered
-  //checkProximity(distance, 1);
-  //checkProximity(distance2, 2);
+  checkProximity(distance, 1);
+  checkProximity(distance2, 2);
   //checkProximity(distance3, 3);
   //checkProximity(distance4, 4);
-  checkProximity(distance5, 5);
-  //checkProximity(distance6, 6);
-  //checkProximity(distance7, 7);
+  //checkProximity(distance5, 5);
+  checkProximity(distance6, 6);
+  checkProximity(distance7, 7);
   //checkProximity(distance8, 8);
+  checkProximity(distance9, 9);
+  checkProximity(distance10, 10);
+  //checkProximity(distance11, 11);
+  //checkProximity(distance12, 12);
 
   // turn off the backlight to conserve power when not needed
   digitalWrite(BACKLIGHT, LOW);
@@ -212,13 +294,16 @@ void displayMessage()
   // setCursor sets starting position to print to
   // controls top 2 lines
   lcd.setCursor(6,0);
-  lcd.print("Estimated Annual Solar Energy");
+  lcd.print("Estimated Solar Energy");
   lcd.setCursor(6,1);
-  lcd.print("Produced: ~1269 kWh/year");
+  lcd.print("Produced: ");
+  lcd.print(power);
+  lcd.print(" watts");
 
   // controls bottom 2 lines
   lcd2.setCursor(6,0);
-  lcd2.print("Money Saved: $122.60 per Year");
+  lcd2.print("Total Money Saved: ");
+  lcd2.print(money,2);
   lcd2.setCursor(6,1);
   lcd2.print("SPONSERED BY OUC");
 }
@@ -572,6 +657,116 @@ void colorExplosion(uint32_t c1, uint32_t c2, uint8_t wait)
   }
 }
 
+void stripFill(uint32_t color)
+{
+  strip.setBrightness(64);
+  for(int i = 0;i < strip.numPixels();i++)
+  {
+    strip.setPixelColor(i, color);
+  }
+  strip.show();
+}
+
+void strip2Fill(uint32_t color)
+{
+  strip2.setBrightness(64);
+  for(int i = 0;i < strip2.numPixels();i++)
+  {
+    strip2.setPixelColor(i, color);
+  }
+  strip2.show();
+}
+
+void FadeInOut(byte red, byte green, byte blue)
+{
+  float r, g, b;
+  uint32_t color;
+  for(int k = 0; k < 256; k=k+1) { 
+    r = (k/256.0)*red;
+    g = (k/256.0)*green;
+    b = (k/256.0)*blue;
+    color = strip2.Color(g, r, b);
+    strip2Fill(color);
+  }
+     
+  for(int k = 255; k >= 0; k = k-2) {
+    r = (k/256.0)*red;
+    g = (k/256.0)*green;
+    b = (k/256.0)*blue;
+    color = strip2.Color(g, r, b);
+    strip2Fill(color);
+  }
+}
+
+void Fire(int Cooling, int Sparking, int SpeedDelay)
+{
+  static byte heat[STRIP2_NUM];
+  int cooldown;
+  strip2.setBrightness(fullBright);
+  
+  // Step 1.  Cool down every cell a little
+  for( int i = 0; i < STRIP2_NUM; i++) 
+  {
+    cooldown = random(0, ((Cooling * 10) / STRIP2_NUM) + 2);
+    
+    if(cooldown>heat[i])
+    {
+      heat[i]=0;
+    } 
+    else 
+    {
+      heat[i]=heat[i]-cooldown;
+    }
+  }
+  
+  // Step 2.  Heat from each cell drifts 'up' and diffuses a little
+  for(int k = STRIP2_NUM - 1;k >= 2;k--) 
+  {
+    heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2]) / 3;
+  }
+    
+  // Step 3.  Randomly ignite new 'sparks' near the bottom
+  if(random(255) < Sparking ) 
+  {
+    int y = random(7);
+    heat[y] = heat[y] + random(160,255);
+    //heat[y] = random(160,255);
+  }
+
+  // Step 4.  Convert heat to LED colors
+  for( int j = 0; j < STRIP2_NUM; j++) 
+  {
+    setPixelHeatColor(j, heat[j]);
+  }
+
+  strip2.show();
+  delay(SpeedDelay);
+}
+
+void setPixelHeatColor (int Pixel, byte temperature)
+{
+  // Scale 'heat' down from 0-255 to 0-191
+  byte t192 = round((temperature/255.0)*191);
+ 
+  // calculate ramp up from
+  byte heatramp = t192 & 0x3F; // 0..63
+  heatramp <<= 2; // scale up to 0..252
+ 
+  // figure out which third of the spectrum we're in:
+  if( t192 > 0x80) 
+  { // hottest
+    strip2.setPixelColor(Pixel, 255, 255, heatramp);
+  } 
+  else if( t192 > 0x40 ) 
+  { // middle
+    strip2.setPixelColor(Pixel, heatramp, 255, 0);
+  } 
+  else 
+  { // coolest
+    strip2.setPixelColor(Pixel, 0, heatramp, 0);
+  }
+}
+
 // query the distance from the IR sensor, if triggered in the specified range
 // trigger a specific LED pattern depending on which sensor was triggered
 void checkProximity(int dist, int senseNum)
@@ -599,9 +794,28 @@ void checkProximity(int dist, int senseNum)
               break;
       case 3: rainbowChase();
               break;
-      case 4: colorExplosion(yellow, blue, 50);
+      case 4: ledPattern3(blue, yellow, green); 
               break;
       case 5: ledPattern3(blue, yellow, green);
+              break;
+      case 6: for(int i = 0;i < 30;i++)
+              {
+                Fire(55, 120, 15);
+              }
+              break;
+      case 7: rainbowChase();
+              break; 
+      case 8: stripFill(white);
+              break;
+      case 9: FadeInOut(0xff, 0x00, 0x00); // red
+              FadeInOut(0xff, 0xff, 0xff); // white 
+              FadeInOut(0x00, 0x00, 0xff); // blue
+              break;
+      case 10: colorExplosion(yellow, blue, 50);
+              break;
+      case 11: rainbowFill(); 
+              break;
+      case 12: stripFill(yellow);
               break;
       default: break;
     }
