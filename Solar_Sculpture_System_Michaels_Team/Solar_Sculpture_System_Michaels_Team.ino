@@ -261,8 +261,8 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
   int ballStart = 0;
   int ballEnd = 14;
   int offset1 = 15;
-  int offset2 = 31;
-  int offset3 = 46;
+  int offset2 = 30;
+  int offset3 = 45;
   strip2.setBrightness(fullBright);
 
   // dome 1 & 2
@@ -315,7 +315,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     }
     
     // strip 2 in dome 1
-    if(i + offset1 <= 30 && i + offset1 >= 15)
+    if(i + offset1 <= 29 && i + offset1 >= 15)
     {
       strip2.setPixelColor(i + offset1, firstOrange);
     }
@@ -323,7 +323,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i + offset1, off);
     }
-    if((i-1 + offset1) <= 30 && (i-1 + offset1) >= 15)
+    if((i-1 + offset1) <= 29 && (i-1 + offset1) >= 15)
     {
       strip2.setPixelColor(i-1 + offset1, secondOrange);
     }
@@ -331,7 +331,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-1 + offset1, off);
     }
-    if((i-2 + offset1) <= 30 && (i-2 + offset1) >= 15)
+    if((i-2 + offset1) <= 29 && (i-2 + offset1) >= 15)
     {
       strip2.setPixelColor(i-2 + offset1, Orange);
     }
@@ -339,7 +339,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-2 + offset1, off);
     }
-    if((i-3 + offset1) <= 30 && (i-3 + offset1) >= 15)
+    if((i-3 + offset1) <= 29 && (i-3 + offset1) >= 15)
     {
       strip2.setPixelColor(i-3 + offset1, fourthOrange);
     }
@@ -347,7 +347,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-3 + offset1, off);
     }
-    if((i-4 + offset1) <= 30 && (i-4 + offset1) >= 15)
+    if((i-4 + offset1) <= 29 && (i-4 + offset1) >= 15)
     {
       strip2.setPixelColor(i-4 + offset1, fifthOrange);
     }
@@ -355,13 +355,13 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-4 + offset1, off);
     }
-    if((i-5 + offset1) <= 30 && (i-5 + offset1) >= 15)
+    if((i-5 + offset1) <= 29 && (i-5 + offset1) >= 15)
     {
       strip2.setPixelColor(i-5 + offset1, off);
     }
     
     // strip 1 in dome 2
-    if(i + offset2 <= 45 && i + offset2 >= 31)
+    if(i + offset2 <= 44 && i + offset2 >= 30)
     {
       strip2.setPixelColor(i + offset2, firstOrange);
     }
@@ -369,7 +369,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i + offset2, off);
     }
-    if((i-1) + offset2 <= 45 && (i-1) + offset2 >= 31)
+    if((i-1) + offset2 <= 44 && (i-1) + offset2 >= 30)
     {
       strip2.setPixelColor(i-1 + offset2, secondOrange);
     }
@@ -377,7 +377,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-1 + offset2, off);
     }
-    if((i-2) + offset2 <= 45 && (i-2) + offset2 >= 31)
+    if((i-2) + offset2 <= 44 && (i-2) + offset2 >= 30)
     {
       strip2.setPixelColor(i-2 + offset2, Orange);
     }
@@ -385,7 +385,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-2 + offset2, off);
     }
-    if((i-3) + offset2 <= 45 && (i-3) + offset2 >= 31)
+    if((i-3) + offset2 <= 44 && (i-3) + offset2 >= 30)
     {
       strip2.setPixelColor(i-3 + offset2, fourthOrange);
     }
@@ -393,7 +393,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-3 + offset2, off);
     }
-    if((i-4) + offset2 <= 45 && (i-4) + offset2 >= 31)
+    if((i-4) + offset2 <= 44 && (i-4) + offset2 >= 30)
     {
       strip2.setPixelColor(i-4 + offset2, fifthOrange);
     }
@@ -401,13 +401,13 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-4 + offset2, off);
     }
-    if((i-5) + offset2 <= 45 && (i-5) + offset2 >= 31)
+    if((i-5) + offset2 <= 44 && (i-5) + offset2 >= 30)
     {
       strip2.setPixelColor(i-5 + offset2, off);
     }
     
     // strip 2 in dome 2
-    if(i + offset3 <= 60 && i + offset3 >= 46)
+    if(i + offset3 <= 59 && i + offset3 >= 45)
     {
       strip2.setPixelColor(i + offset3, firstOrange);
     }
@@ -415,7 +415,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i + offset3, off);
     }
-    if((i-1) + offset3 <= 60 && (i-1) + offset3 >= 46)
+    if((i-1) + offset3 <= 59 && (i-1) + offset3 >= 45)
     {
       strip2.setPixelColor(i-1 + offset3, secondOrange);
     }
@@ -423,7 +423,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-1 + offset3, off);
     }
-    if((i-2) + offset3 <= 60 && (i-2) + offset3 >= 46)
+    if((i-2) + offset3 <= 59 && (i-2) + offset3 >= 45)
     {
       strip2.setPixelColor(i-2 + offset3, Orange);
     }
@@ -431,7 +431,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-2 + offset3, off);
     }
-    if((i-3) + offset3 <= 60 && (i-3) + offset3 >= 46)
+    if((i-3) + offset3 <= 59 && (i-3) + offset3 >= 45)
     {
       strip2.setPixelColor(i-3 + offset3, fourthOrange);
     }
@@ -439,7 +439,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-3 + offset3, off);
     }
-    if((i-4) + offset3 <= 60 && (i-4) + offset3 >= 46)
+    if((i-4) + offset3 <= 59 && (i-4) + offset3 >= 45)
     {
       strip2.setPixelColor(i-4 + offset3, fifthOrange);
     }
@@ -447,7 +447,7 @@ void orangeChase(uint32_t firstOrange, uint32_t secondOrange, uint32_t Orange, u
     {
       strip2.setPixelColor(i-4 + offset3, off);
     }
-    if((i-5) + offset3 <= 60 && (i-5) + offset3 >= 46)
+    if((i-5) + offset3 <= 59 && (i-5) + offset3 >= 45)
     {
       strip2.setPixelColor(i-5 + offset3, off);
     }
